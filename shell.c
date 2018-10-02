@@ -336,7 +336,50 @@ int runCommand(struct job newJob, struct jobSet * jobList,
         return 0;
     } else if (!strcmp(newJob.progs[0].argv[0], "fg") ||
                !strcmp(newJob.progs[0].argv[0], "bg")) {
- 
+
+    	// Validating the numbers of parameters in argv
+    	if ((sizeof(newJob.progs[0].argv) / sizeof(char*)) > 2 ||
+    			!newJob.progs[0].argv[1]) {
+    		fprintf(stderr, "Number of arguments is incorrect. fg / bg expects only one parameter (job number)");
+    		return 1;
+    	}
+
+    	// Getting the job number
+    	if (sscanf(newJob.progs[0].argv[1], "%d", &jobNum) != 1) {
+    		fprintf(stderr, "Invalid argument. It should be an integer representing the job number");
+    		return 1;
+    	}
+
+    	// Checking if the job number received exists
+    	short int isThere = 0;
+
+    	for (job = jobList->head; job; job = job->next) {
+    		if (job->jobId == jobNum) {
+    			isThere = 1;
+    		}
+    	}
+
+    	if (!isThere) {
+    		fprintf(stderr, "Job number \'%d\' does not exist", jobNum);
+    		return 1;
+    	}
+
+    	// Foreground process and not a background one
+    	if (newJob.progs[0].argv[0][0] == 'f') {
+    		if (tcsetpgrp(0, job->pgrp))
+    			perror("tcsetpgrp");
+
+    		// Moving the requested job to the foreground
+    		jobList->fg = job;
+    	}
+
+    	for (i = 0; i < job->numProgs; i++)
+    		job->progs[i].isStopped = 0;
+
+    	kill(-job->pgrp, SIGCONT);
+
+    	job->stoppedProgs = 0;
+
          // FILL IN HERE
 	// First of all do some syntax checking. 
 	// If the syntax check fails return 1
