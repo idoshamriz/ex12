@@ -128,11 +128,10 @@ void globLastArgument(struct childProgram * prog, int * argcPtr,
 int parseCommand(char ** commandPtr, struct job * job, int * isBg) {
     char * command;
     char * returnCommand = NULL;
-    char * src, * buf, * chptr;
+    char * src, * buf;
     int argc = 0;
     int done = 0;
     int argvAlloced;
-    int i;
     char quote = '\0';  
     int count;
     struct childProgram * prog;
@@ -338,8 +337,7 @@ int runCommand(struct job newJob, struct jobSet * jobList,
                !strcmp(newJob.progs[0].argv[0], "bg")) {
 
     	// Validating the numbers of parameters in argv
-    	if ((sizeof(newJob.progs[0].argv) / sizeof(char*)) > 2 ||
-    			!newJob.progs[0].argv[1]) {
+    	if (!newJob.progs[0].argv[1] || newJob.progs[0].argv[2]) {
     		fprintf(stderr, "%s: exactly one argument is expected\n", newJob.progs[0].argv[0]);
     		return 1;
     	}
