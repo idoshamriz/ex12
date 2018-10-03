@@ -340,13 +340,13 @@ int runCommand(struct job newJob, struct jobSet * jobList,
     	// Validating the numbers of parameters in argv
     	if ((sizeof(newJob.progs[0].argv) / sizeof(char*)) > 2 ||
     			!newJob.progs[0].argv[1]) {
-    		fprintf(stderr, "Number of arguments is incorrect. fg / bg expects only one parameter (job number)");
+    		fprintf(stderr, "%s: exactly one argument is expected\n", newJob.progs[0].argv[0]);
     		return 1;
     	}
 
     	// Getting the job number
-    	if (sscanf(newJob.progs[0].argv[1], "%d", &jobNum) != 1) {
-    		fprintf(stderr, "Invalid argument. It should be an integer representing the job number");
+    	if (sscanf(newJob.progs[0].argv[1], "%%%d", &jobNum) != 1) {
+    		fprintf(stderr, "%s: bad argument '%s'\n", newJob.progs[0].argv[0], newJob.progs[0].argv[1]);
     		return 1;
     	}
 
@@ -360,7 +360,7 @@ int runCommand(struct job newJob, struct jobSet * jobList,
     	}
 
     	if (!isThere) {
-    		fprintf(stderr, "Job number \'%d\' does not exist", jobNum);
+    		fprintf(stderr, "unknown job %d\n", jobNum);
     		return 1;
     	}
 
