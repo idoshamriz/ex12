@@ -309,7 +309,7 @@ int runCommand(struct job newJob, struct jobSet * jobList,
         free(buf);
         return 0;
     } else if (!strcmp(newJob.progs[0].argv[0], "cd")) {
-        if (!newJob.progs[0].argv[1] == 1) 
+        if (!newJob.progs[0].argv[1] == 1)
             newdir = getenv("HOME");
         else 
             newdir = newJob.progs[0].argv[1];
@@ -337,7 +337,7 @@ int runCommand(struct job newJob, struct jobSet * jobList,
                !strcmp(newJob.progs[0].argv[0], "bg")) {
 
     	// Validating the numbers of parameters in argv
-    	if (!newJob.progs[0].argv[1] || newJob.progs[0].argv[2]) {
+    	if (!(newJob.progs[0].argv[1]) || newJob.progs[0].argv[2]) {
     		fprintf(stderr, "%s: exactly one argument is expected\n", newJob.progs[0].argv[0]);
     		return 1;
     	}
@@ -349,34 +349,36 @@ int runCommand(struct job newJob, struct jobSet * jobList,
     	}
 
     	// Checking if the job number received exists
-    	short int isThere = 0;
+    	struct job * wantedJob = jobList->head;
 
     	for (job = jobList->head; job; job = job->next) {
-    		if (job->jobId == jobNum) {
-    			isThere = 1;
-    		}
+    		if (job->jobId == jobNum)
+    		// Found the wanted job
+    		break;
     	}
 
-    	if (!isThere) {
-    		fprintf(stderr, "unknown job %d\n", jobNum);
+    	// Job is either the requested one or that the for loop
+    	// Reached it's end and therefore job = NULL
+    	if (!job) {
+    		fprintf(stderr, "%s: unknown job %d\n", newJob.progs[0].argv[0], jobNum);
     		return 1;
     	}
 
-    	// Foreground process and not a background one
-    	if (newJob.progs[0].argv[0][0] == 'f') {
-    		if (tcsetpgrp(0, job->pgrp))
+    	// If the command is fg,
+    	if ((newJob.progs[0].argv[0])[0] == 'f') {
+    		if (tcsetpgrp(STDIN_FILENO, wantedJob->pgrp))
     			perror("tcsetpgrp");
 
     		// Moving the requested job to the foreground
-    		jobList->fg = job;
+    		jobList->fg = wantedJob;
     	}
 
-    	for (i = 0; i < job->numProgs; i++)
-    		job->progs[i].isStopped = 0;
+    	for (i = 0; i < wantedJob->numProgs; i++)
+    		wantedJob->progs[i].isStopped = 0;
 
-    	kill(-job->pgrp, SIGCONT);
+    	kill(-wantedJob->pgrp, SIGCONT);
 
-    	job->stoppedProgs = 0;
+    	wantedJob->stoppedProgs = 0;
 
          // FILL IN HERE
 	// First of all do some syntax checking. 
