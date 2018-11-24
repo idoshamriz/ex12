@@ -1,3 +1,9 @@
+/* 
+Student: Ido Shamriz (ID 318435138)
+Maman 12
+Course 20594
+Semseter 2019a
+ */
 
 #include <ctype.h>
 #include <errno.h>
@@ -318,13 +324,11 @@ int runCommand(struct job newJob, struct jobSet * jobList,
                     strerror(errno));
         return 0;
     } else if (!strcmp(newJob.progs[0].argv[0], "jobs")) {
-    	// FILL IN HERE
-    	// Scan the job list and print jobs' status
-    	// using the following function
-    	//    printf(JOB_STATUS_FORMAT, job->jobId, statusString,
-    	//            job->text);
-    	// while statusString is one of the {Stopped, Running}
+
+    	// Print all jobs based on their status
     	for (job = jobList->head; job; job = job->next) {
+
+    		// If all programs are finished, The job has stopped
     		if (job->runningProgs == job->stoppedProgs)
     			statusString = "Stopped";
     		else
@@ -379,18 +383,6 @@ int runCommand(struct job newJob, struct jobSet * jobList,
     	kill(-wantedJob->pgrp, SIGCONT);
 
     	wantedJob->stoppedProgs = 0;
-
-         // FILL IN HERE
-	// First of all do some syntax checking. 
-	// If the syntax check fails return 1
-	// else find the job in the job list 
-  	// If job not found return 1
-	// If strcmp(newJob.progs[0].argv[0] == "f"
-	// then put the job you found in the foreground (use tcsetpgrp)
-	// Don't forget to update the fg field in jobList
-	// In any case restart the processes in the job by calling 
-	// kill(-job->pgrp, SIGCONT). Don't forget to set isStopped = 0   
-	// in every proicess and stoppedProgs = 0 in the job
 
         return 0;
     }
